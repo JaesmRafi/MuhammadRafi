@@ -66,7 +66,7 @@ function renderTodos() {
         const li = document.createElement('li');
         li.innerHTML = `
             <span class="${todo.done ? 'done' : ''}" onclick="toggleTodo(${index})">${todo.text}</span>
-            <button onclick="deleteTodo(${index})">X</button>
+            <button onclick="deleteTodo(${index})">Delete</button>
         `;
         todoList.appendChild(li);
     });
