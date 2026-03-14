@@ -12,6 +12,7 @@
             <button id="theme-toggle">🌓</button>
             <h1 id="clock">00:00:00</h1>
             <h2 id="greeting">Loading...</h2>
+            <div id="calendar">Memuat Tanggal...</div>
             <input type="text" id="user-name" placeholder="Siapa namamu?" maxlength="15">
         </header>
 
@@ -35,11 +36,15 @@
                 <ul id="todo-list"></ul>
             </section>
 
-            <section class="card links">
-                <h3>Quick Links</h3>
-                <div id="links-container"></div>
-                <button id="add-link-btn">+ Add Link</button>
-            </section>
+           <section class="card links">
+    <h3>Quick Links</h3>
+    <div id="links-container" class="links-grid"></div>
+    
+   <div class="add-link-section">
+        <input type="text" id="link-url" placeholder="Paste Link">
+        <button id="add-link-btn">Add</button>
+    </div>
+</section>
         </main>
     </div>
     <script src="script.js"></script>
