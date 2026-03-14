@@ -1,156 +1,167 @@
-:root {
-    --bg: #f4f4f9;
-    --card: #ffffff;
-    --text: #333;
-    --primary: #4a90e2;
+const clockEl = document.getElementById('clock');
+const greetingEl = document.getElementById('greeting');
+const nameInput = document.getElementById('user-name');
+const timerDisplay = document.getElementById('timer-display');
+const todoForm = document.getElementById('todo-form');
+const todoList = document.getElementById('todo-list');
+const themeBtn = document.getElementById('theme-toggle');
+
+
+function updateClock() {
+    const now = new Date();
+    clockEl.innerText = now.toLocaleTimeString();
+
+
+    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+    const dateString = now.toLocaleDateString('id-ID', options);
+    document.getElementById('calendar').innerText = dateString;
+    
+    const hours = now.getHours();
+    let greet = "Selamat Malam";
+    if (hours < 12) greet = "Selamat Pagi";
+    else if (hours < 18) greet = "Selamat Siang";
+    
+    const savedName = localStorage.getItem('kiro-name') || "";
+    greetingEl.innerText = `${greet}${savedName ? ', ' + savedName : ''}!`;
+}
+setInterval(updateClock, 1000);
+
+nameInput.addEventListener('change', (e) => {
+    localStorage.setItem('kiro-name', e.target.value);
+    updateClock();
+});
+
+
+let timer;
+let timeLeft = 25 * 60;
+
+function updateTimerDisplay() {
+    const mins = Math.floor(timeLeft / 60);
+    const secs = timeLeft % 60;
+    timerDisplay.innerText = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
 }
 
-.dark-mode {
-    --bg: #1a1a1a;
-    --card: #2d2d2d;
-    --text: #e0e0e0;
-    --primary: #6ab0ff;
+document.getElementById('start-btn').onclick = () => {
+    if (!timer) timer = setInterval(() => {
+        timeLeft--;
+        updateTimerDisplay();
+        if (timeLeft <= 0) clearInterval(timer);
+    }, 1000);
+};
+
+document.getElementById('stop-btn').onclick = () => {
+    clearInterval(timer);
+    timer = null;
+};
+
+document.getElementById('reset-btn').onclick = () => {
+    clearInterval(timer);
+    timer = null;
+    timeLeft = 25 * 60;
+    updateTimerDisplay();
+};
+
+
+let todos = JSON.parse(localStorage.getItem('kiro-todos')) || [];
+
+function renderTodos() {
+    todoList.innerHTML = '';
+    todos.forEach((todo, index) => {
+        const li = document.createElement('li');
+        li.innerHTML = `
+    <div class="todo-left">
+        <input type="checkbox" ${todo.done ? 'checked' : ''} onchange="toggleTodo(${index})">
+        <span class="${todo.done ? 'done' : ''}">${todo.text}</span>
+    </div>
+    <button class="delete-btn" onclick="deleteTodo(${index})">Delete</button>
+`;
+        todoList.appendChild(li);
+    });
+    localStorage.setItem('kiro-todos', JSON.stringify(todos));
 }
 
-body {
-    background-color: var(--bg);
-    color: var(--text);
-    font-family: 'Inter', sans-serif;
-    transition: 0.3s;
-    display: flex;
-    justify-content: center;
-    padding: 2rem;
-}
-
-.container { width: 100%; max-width: 800px; }
-
-header { text-align: center; margin-bottom: 2rem; position: relative; }
-
-#theme-toggle { position: absolute; right: 0; top: 0; cursor: pointer; border: none; background: none; font-size: 1.5rem; }
-
-.grid-layout {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 1.5rem;
-}
-
-.card {
-    background: var(--card);
-    padding: 1.5rem;
-    border-radius: 12px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-}
-
-#timer-display { font-size: 3rem; font-weight: bold; margin: 1rem 0; text-align: center; }
-#calendar {
-    font-size: 1.1rem;
-    font-weight: 500;
-    margin-bottom: 1rem;
-    opacity: 0.9;
-    letter-spacing: 0.5px;
-    color: var(--text); 
-}
-#greeting {
-    margin-bottom: 5px;
-}
-
-.todo ul { list-style: none; padding: 0; margin-top: 1rem; }
-
-.todo li {
-    display: flex;
-    justify-content: space-between;
-    padding: 0.5rem 0;
-    border-bottom: 1px solid #eee;
-}
-
-.links-grid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin-bottom: 20px;
-}
-
-.links-grid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin-bottom: 20px;
-}
-
-.quick-link-item {
-    display: flex;
-    align-items: center; 
-    background: var(--primary);
-    padding: 8px 12px 8px 16px; 
-    border-radius: 8px;
-    gap: 8px; 
-    transition: 0.3s;
-    margin: 5px;
-}
-
-.quick-link-item:hover {
-    filter: brightness(1.2);
-    transform: translateY(-2px);
-}
-
-.quick-link-item a {
-    text-decoration: none;
-    color: white;
-    font-weight: bold;
-    font-size: 0.9rem;
-    text-transform: capitalize;
-    line-height: 1; 
-}
-.del-link {
-    background: rgba(255, 255, 255, 0.2);
-    color: white;
-    border: none;
+todoForm.onsubmit = (e) => {
+    e.preventDefault();
+    const text = document.getElementById('todo-input').value.trim();
     
 
-    width: 18px !important;
-    height: 18px !important;
-    border-radius: 50% !important;
-    
+    if (todos.some(t => t.text.toLowerCase() === text.toLowerCase())) {
+        alert("Tugas sudah ada!");
+        return;
+    }
 
-    padding: 0 !important;
-    
+    todos.push({ text, done: false });
+    document.getElementById('todo-input').value = '';
+    renderTodos();
+};
 
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    
-    font-size: 10px;
-    cursor: pointer;
-    align-self: flex-start;
-    margin-top: -2px;
-    transition: 0.2s;
+window.toggleTodo = (index) => {
+    todos[index].done = !todos[index].done;
+    renderTodos();
+};
+
+window.deleteTodo = (index) => {
+    todos.splice(index, 1);
+    renderTodos();
+};
+
+
+themeBtn.onclick = () => {
+    document.body.classList.toggle('dark-mode');
+    const isDark = document.body.classList.contains('dark-mode');
+    localStorage.setItem('kiro-theme', isDark ? 'dark' : 'light');
+};
+
+let quickLinks = JSON.parse(localStorage.getItem('kiro-links')) || [
+    { name: 'Google', url: 'https://google.com' }
+];
+
+const linksContainer = document.getElementById('links-container');
+const linkUrlInput = document.getElementById('link-url');
+const addLinkBtn = document.getElementById('add-link-btn');
+
+function renderLinks() {
+    linksContainer.innerHTML = '';
+    quickLinks.forEach((link, index) => {
+        const div = document.createElement('div');
+        div.className = 'quick-link-item';
+        div.innerHTML = `
+            <a href="${link.url}" target="_blank">${link.name}</a>
+            <button class="del-link" onclick="deleteLink(${index})">×</button>
+        `;
+        linksContainer.appendChild(div);
+    });
+    localStorage.setItem('kiro-links', JSON.stringify(quickLinks));
 }
 
-.del-link:hover {
-    background: #ff4d4d;  
-    transform: scale(1.1);
-}
+addLinkBtn.onclick = () => {
+    let url = linkUrlInput.value.trim();
 
-button.delete-btn {
-    background-color: #ff4d4d !important; 
-    color: white !important;
-    border: none;
-    padding: 6px 12px;
-    border-radius: 6px;
-    font-weight: bold;
-    cursor: pointer;
-    margin-left: 10px;
-}
-button.delete-btn:hover {
-    background-color: #cc0000 !important;
-}
-.done { text-decoration: line-through; opacity: 0.6; }
+    if (url) {
+        if (!url.startsWith('http')) url = 'https://' + url;
 
-button {
-    cursor: pointer;
-    padding: 0.5rem 1rem;
-    border-radius: 6px;
-    border: none;
-    background: var(--primary);
-    color: white;
-}
+        try {
+            const domain = new URL(url).hostname.replace('www.', '');
+            // Hapus .toUpperCase() dan ambil nama domain aslinya saja
+            const name = domain.split('.')[0]; 
+
+            quickLinks.push({ name, url });
+            linkUrlInput.value = '';
+            renderLinks();
+        } catch (e) {
+            alert("URL tidak valid!");
+        }
+    }
+};
+
+window.deleteLink = (index) => {
+    quickLinks.splice(index, 1);
+    renderLinks();
+};
+
+renderLinks();
+
+if (localStorage.getItem('kiro-theme') === 'dark') document.body.classList.add('dark-mode');
+nameInput.value = localStorage.getItem('kiro-name') || "";
+updateClock();
+renderTodos();
